@@ -113,7 +113,7 @@ export const constantRoutes = [
         meta: { title: '考勤管理', icon: 'dashboard', affix: true }
       }
     ]
-  },
+  }
 
   // {
   //   path: '/',
@@ -167,7 +167,7 @@ export const constantRoutes = [
 //       }
 //     ]
   // }
-  ]
+]
 
 /**
  * asyncRoutes

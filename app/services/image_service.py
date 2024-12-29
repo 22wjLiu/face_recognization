@@ -7,6 +7,7 @@ from flask import g
 from app.config import Config
 from app import db
 
+
 def generate_filename(original_filename):
     # 使用时间戳生成唯一前缀
     timestamp = int(time.time())
@@ -65,6 +66,7 @@ def save_face_feature(s_id, file):
 
     except Exception as e:
         return {"message": f"文件保存失败: {str(e)}"}, 500
+
 
 def recognize(file):
     if not file or not allowed_file(file.filename):

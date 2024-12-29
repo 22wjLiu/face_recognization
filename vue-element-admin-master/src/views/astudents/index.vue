@@ -22,15 +22,12 @@
       fit
       highlight-current-row
       style="width: 100%;"
-      @sort-change="sortChange"
     >
       <el-table-column
         label="学号"
         prop="id"
-        sortable="custom"
         align="center"
         width="300"
-        :class-name="getSortClass('id')"
       >
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
@@ -88,15 +85,12 @@
           highlight-current-row
           height="300px"
           style="width: 100%;"
-          @sort-change="sortChange"
         >
           <el-table-column
             label="序列"
             prop="id"
-            sortable="custom"
             align="center"
             width="100"
-            :class-name="getSortClass('id')"
           >
             <template slot-scope="{row}">
               <span>{{ row.id }}</span>
@@ -196,10 +190,6 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        importance: undefined,
-        author: undefined,
-        type: undefined,
-        sort: '+id'
       },
       importanceOptions: [1, 2, 3],
       calendarTypeOptions,

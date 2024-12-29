@@ -89,7 +89,7 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/',
+    path: '/class',
     component: Layout,
     redirect: '/classes',
     children: [
@@ -102,7 +102,7 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/',
+    path: '/check',
     component: Layout,
     redirect: '/check',
     children: [

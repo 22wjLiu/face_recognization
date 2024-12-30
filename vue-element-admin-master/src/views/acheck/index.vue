@@ -359,7 +359,6 @@ export default {
         type: 'success',
         duration: 2000
       })
-      // this.list.splice(index, 1)
       request.delete('feature/deleteById', {
         params: {
           id: row.id

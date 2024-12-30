@@ -230,7 +230,10 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        name: ''
+        name: '',
+      },
+      listQueryInfos: {/**考勤结果 */
+        cId:1,
       },
       temper: {
         id: undefined,
@@ -238,7 +241,7 @@ export default {
         endTime: '',
         name: '', /** 考勤名称 */
         className: '',
-        cid: 0
+        cid: 0,/**班级id */
       },
       dialogFormVisible: false,
       detailFormVisible: false,
@@ -276,6 +279,16 @@ export default {
         this.listLoading = false // 确保加载状态关闭
       })
     },
+    //添加考勤状态学生列表
+    getList() {
+    this.listLoading = true
+    request.get('check/queryCheckInfos' ,{
+      params: this.listQueryInfos
+    }).then(response => {
+      this.list = response.data
+      this.total = response.total
+      this.listLoading = false // 确保加载状态关闭
+    }),
     getAllClass() {
       request.get('class/queryAllClassIdAndName').then(response => {
         this.classList = response.data
@@ -352,23 +365,17 @@ export default {
         }
       })
     },
-    handleDelete(row, index) {
-      this.$notify({
-        title: '成功',
-        message: '提交删除请求成功，请等待服务器响应',
-        type: 'success',
-        duration: 2000
-      })
-      // this.list.splice(index, 1)
-      request.delete('feature/deleteById', {
+    // 删除考勤
+    handleDelete(row) {
+      request.delete('check/deleteById', {
         params: {
           id: row.id
         }
       }).then(() => {
-        this.getFeatureList(this.temper.id)
+        this.getList()
         this.$notify({
           title: '成功',
-          message: '删除成功！',
+          message: '删除考勤成功！',
           type: 'success',
           duration: 2000
         })

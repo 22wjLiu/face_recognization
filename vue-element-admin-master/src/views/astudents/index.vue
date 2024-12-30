@@ -193,7 +193,6 @@ export default {
     this.getList()
   },
   methods: {
-    getRequestHeader,
     getUploadHeader,
     getList() {
       this.listLoading = true

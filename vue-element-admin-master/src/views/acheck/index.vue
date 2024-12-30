@@ -34,7 +34,7 @@
           <el-tag>{{ row.type | typeFilter }}</el-tag>
         </template>
       </el-table-column>
-     
+
       <el-table-column label="操作" align="center" width="350px" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="detailViews()">
@@ -60,7 +60,7 @@
         <el-form-item label=" 考勤的名称" prop="title">
           <el-input v-model="temper.title" />
         </el-form-item>
-        
+
         <el-form-item label="选择考勤班级" prop="type">
           <el-select v-model="temper.type" class="filter-item" placeholder="Please select">
             <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
@@ -71,7 +71,7 @@
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
-         取消
+          取消
         </el-button>
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
           确定
@@ -138,7 +138,7 @@
 </template>
 
 <script>
-import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
+import { fetchList, createArticle, updateArticle } from '@/api/article'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -357,9 +357,9 @@ export default {
       const sort = this.listQuery.sort
       return sort === `+${key}` ? 'ascending' : 'descending'
     },
-    detailViews(){//考勤详细信息
+    detailViews() { // 考勤详细信息
       this.resetTemp()
-      this.dialogTitle = "考勤详细信息"
+      this.dialogTitle = '考勤详细信息'
       this.detailFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()

@@ -1,7 +1,10 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-
+      <el-input v-model="listQuery.name" placeholder="学生名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+        查询
+      </el-button>
       <el-button
         class="filter-item"
         style="margin-left: 10px;"
@@ -21,35 +24,30 @@
       border
       fit
       highlight-current-row
-      style="width: 100%;"
-      @sort-change="sortChange"
     >
       <el-table-column
         label="学号"
         prop="id"
-        sortable="custom"
         align="center"
         width="300"
-        :class-name="getSortClass('id')"
       >
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="学生姓名" width="300px" align="center">
+      <el-table-column label="学生姓名" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.author }}</span>
+          <span>{{ row.name }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" align="center" width="400" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             编辑
           </el-button>
           <el-button
-            v-if="row.status != 'deleted'"
             size="mini"
             style="margin-left:40px ;"
             type="danger"
@@ -74,9 +72,10 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px">
 
-        <el-form-item label="学生姓名" prop="author">
-          <el-input v-model="temp.author" />
+        <el-form-item label="学生姓名" prop="name">
+          <el-input v-model="temp.name" />
         </el-form-item>
+
 
         <!--内嵌 表格 -->
         <el-table
@@ -98,44 +97,53 @@
             width="100"
             :class-name="getSortClass('id')"
           >
-            <template slot-scope="{row}">
-              <span>{{ row.id }}</span>
-            </template>
-          </el-table-column>
+            <el-table-column
+              label="特征ID"
+              prop="id"
+              align="center"
+              width="100"
+            >
+              <template slot-scope="{row}">
+                <span>{{ row.id }}</span>
+              </template>
+            </el-table-column>
 
-          <el-table-column label="图片" width="250px" align="center">
-            <template slot-scope="{row}">
-              <img src="" alt="">
-            </template>
-          </el-table-column>
+            <el-table-column label="图片" width="100px" align="center">
+              <template slot-scope="{row}">
+                <img style="height: 100px;" :src="getRequestHeader() + row.img_url" alt="">
+              </template>
+            </el-table-column>
 
-          <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-            <template slot-scope="{row,$index}">
-              <el-button
-                v-if="row.status != 'deleted'"
-                size="mini"
-                style="margin-left:40px ;"
-                type="danger"
-                @click="handleDelete(row, $index)"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+            <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+              <template slot-scope="{row}">
+                <el-button
+                  size="mini"
+                  style="margin-left:40px ;"
+                  type="danger"
+                  @click="handleFeatureDelete(row)"
+                >
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-form-item>
 
-        <el-upload
-          class="avatar-uploader"
-          action="http://www.shantouliu.site:4499/recognize?s_id=2"
-          :show-file-list="false"
-          :on-success="handleAvatarSuccess"
-          :before-upload="beforeAvatarUpload"
-        >
-          <img v-if="imageUrl" :src="imageUrl" class="avatar">
-          <i v-else class="el-icon-plus avatar-uploader-icon" />
-        </el-upload>
+        <el-form-item v-if="dialogStatus !== 'create'" label="上传人脸特征">
+          <el-upload
+            class="avatar-uploader"
+            :action="getRequestHeader() + '/upload?s_id=' + temp.id"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img v-if="imageUrl" :src="getRequestHeader() + imageUrl" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon" />
+          </el-upload>
+        </el-form-item>
 
       </el-form>
+
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
           取消
@@ -150,83 +158,42 @@
 </template>
 
 <script>
-import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-import waves from '@/directive/waves' // waves directive
-import { parseTime } from '@/utils'
+import waves from '@/directive/waves'
+import request from '@/utils/request'
+import { getRequestHeader } from '@/utils/requestpath'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-
-const calendarTypeOptions = [
-  { key: 'CN', display_name: 'China' },
-  { key: 'US', display_name: 'USA' },
-  { key: 'JP', display_name: 'Japan' },
-  { key: 'EU', display_name: 'Eurozone' }
-]
-
-// arr to obj, such as { CN : "China", US : "USA" }
-const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  acc[cur.key] = cur.display_name
-  return acc
-}, {})
 
 export default {
   name: 'ComplexTable',
   components: { Pagination },
   directives: { waves },
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      return statusMap[status]
-    },
-    typeFilter(type) {
-      return calendarTypeKeyValue[type]
-    }
-  },
   data() {
     return {
-      test: '',
       imageUrl: '',
       tableKey: 0,
       list: null,
       total: 0,
       listLoading: true,
+      featureListLoading: false,
       listQuery: {
         page: 1,
-        limit: 20,
-        importance: undefined,
-        author: undefined,
-        type: undefined,
-        sort: '+id'
+        limit: 10,
+        name: ''
       },
-      importanceOptions: [1, 2, 3],
-      calendarTypeOptions,
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
-      statusOptions: ['published', 'draft', 'deleted'],
       showReviewer: false,
       temp: {
         id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        author: '',
-        type: '',
-        status: 'published'
+        name: ''
       },
+      tempfeatures: [],
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
         update: '编辑',
         create: '创建'
       },
-      dialogPvVisible: false,
-      pvData: [],
       rules: {
-        imestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        id: [{ required: true, message: '学生学号不能为空', trigger: 'blur' }],
-        author: [{ required: true, message: '学生姓名不能为空', trigger: 'blur' }]
+        name: [{ required: true, message: '学生姓名不能为空', trigger: 'blur' }]
       },
       downloadLoading: false
     }
@@ -235,16 +202,27 @@ export default {
     this.getList()
   },
   methods: {
+    getRequestHeader,
     getList() {
       this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+      request.get('student/queryStudentList', {
+        params: this.listQuery
+      }).then(response => {
+        this.list = response.data
+        this.total = response.total
+        this.listLoading = false
+      })
+    },
+    getFeatureList(id) {
+      this.featureListLoading = true
+      request.get('feature/getBySId', {
+        params: {
+          s_id: id
+        }
+      }).then(response => {
+        this.tempfeatures = response.data
+        this.tempfeatures.s_id = id
+        this.featureListLoading = false
       })
     },
     handleModifyStatus(row, status) {
@@ -254,29 +232,14 @@ export default {
       })
       row.status = status
     },
-    sortChange(data) {
-      const { prop, order } = data
-      if (prop === 'id') {
-        this.sortByID(order)
-      }
-    },
-    sortByID(order) {
-      if (order === 'ascending') {
-        this.listQuery.sort = '+id'
-      } else {
-        this.listQuery.sort = '-id'
-      }
-      this.handleFilter()
+    handleFilter() {
+      this.listQuery.page = 1
+      this.getList()
     },
     resetTemp() {
       this.temp = {
         id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        author: '', /* 学生姓名 */
-        status: 'published',
-        type: ''
+        name: ''
       }
     },
     handleCreate() {
@@ -290,14 +253,12 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          // this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
-            this.list.unshift(this.temp)
+          request.post('student/addStudent', this.temp).then(() => {
             this.dialogFormVisible = false
+            this.getList()
             this.$notify({
-              title: 'Success',
-              message: 'Created Successfully',
+              title: '成功',
+              message: '添加学生成功',
               type: 'success',
               duration: 2000
             })
@@ -306,9 +267,10 @@ export default {
       })
     },
     handleUpdate(row) { // 编辑操作
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp)
+      this.temp = Object.assign({}, row)
       this.dialogStatus = 'update'
+      this.imageUrl = ''
+      this.getFeatureList(this.temp.id)
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
@@ -317,15 +279,12 @@ export default {
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            const index = this.list.findIndex(v => v.id === this.temp.id)
-            this.list.splice(index, 1, this.temp)
+          request.post('student/updateStudent', this.temp).then(() => {
             this.dialogFormVisible = false
+            this.getList()
             this.$notify({
-              title: 'Success',
-              message: 'Update Successfully',
+              title: '成功',
+              message: '编辑成功！',
               type: 'success',
               duration: 2000
             })
@@ -333,40 +292,51 @@ export default {
         }
       })
     },
-    handleDelete(row, index) {
+    handleFeatureDelete(row) {
       this.$notify({
-        title: 'Success',
-        message: 'Delete Successfully',
+        title: '成功',
+        message: '提交删除请求成功，请等待服务器响应！',
         type: 'success',
         duration: 2000
       })
-      this.list.splice(index, 1)
-    },
-    handleFetchPv(pv) {
-      fetchPv(pv).then(response => {
-        this.pvData = response.data.pvData
-        this.dialogPvVisible = true
+      request.delete('feature/deleteById', {
+        params: {
+          id: row.id
+        }
+      }).then(() => {
+        this.getFeatureList(this.temp.id)
+        this.$notify({
+          title: '成功',
+          message: '删除成功！',
+          type: 'success',
+          duration: 2000
+        })
       })
     },
-
-    formatJson(filterVal) {
-      return this.list.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j])
-        } else {
-          return v[j]
+    handleDelete(row) {
+      request.delete('student/deleteStudent', {
+        params: {
+          id: row.id
         }
-      }))
+      }).then(() => {
+        this.getList()
+        this.$notify({
+          title: '成功',
+          message: '删除成功！',
+          type: 'success',
+          duration: 2000
+        })
+      })
     },
-    getSortClass: function(key) {
-      const sort = this.listQuery.sort
-      return sort === `+${key}` ? 'ascending' : 'descending'
-    },
-    handleAvatarSuccess(res, file) {
-      this.imageUrl = 'http://www.shantouliu.site:4499' + res.data
-    },
-    handleTestSuccess(res, file) {
-      this.test = res.data
+    handleAvatarSuccess(res) {
+      this.imageUrl = res.data
+      this.$notify({
+        title: '成功',
+        message: '添加人脸特征成功！',
+        type: 'success',
+        duration: 2000
+      })
+      this.getFeatureList(this.temp.id)
     },
     beforeAvatarUpload(file) {
       const isJPG = file.type === 'image/jpeg' || 'image/png'
@@ -378,6 +348,12 @@ export default {
       if (!isLt2M) {
         this.$message.error('上传头像图片大小不能超过 2MB!')
       }
+      this.$notify({
+        title: '成功',
+        message: '提交上传请求成功，请等待服务器响应！',
+        type: 'success',
+        duration: 2000
+      })
       return isJPG && isLt2M
     }
   }
@@ -385,14 +361,18 @@ export default {
 </script>
 
 <style scoped>
-  .avatar-uploader .el-upload {
+.filter-container .filter-item {
+  margin-left: 10px;
+}
+
+  .avatar-uploader >>> .el-upload {
     border: 1px dashed #d9d9d9;
     border-radius: 6px;
     cursor: pointer;
     position: relative;
     overflow: hidden;
   }
-  .avatar-uploader .el-upload:hover {
+  .avatar-uploader >>> .el-upload:hover {
     border-color: #409EFF;
   }
   .avatar-uploader-icon {

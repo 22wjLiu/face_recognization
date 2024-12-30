@@ -25,16 +25,27 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="截止时间" width="200px" align="center">
+      <el-table-column label="开始时间" width="200px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ row.createTime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="考勤名称" width="600px" align="center">
+      <el-table-column label="截止时间" width="200px" align="center">
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
-          <el-tag>{{ row.type | typeFilter }}</el-tag>
+          <span>{{ row.endTime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="考勤名称" width="300px" align="center">
+        <template slot-scope="{row}">
+          <span @click="handleUpdate(row)">{{ row.name }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="班级" width="100px" align="center">
+        <template slot-scope="{row}">
+          <span >{{ row.className }}</span>
         </template>
       </el-table-column>
 
@@ -92,17 +103,21 @@
       <!-- 考勤发起弹窗 -->
       <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temper" label-position="left" label-width="125px">
-
-        <el-form-item label="考勤结束时间" prop="timestamp">
-          <el-date-picker v-model="temper.timestamp" type="datetime" placeholder="Please pick a date" />
+      <!-- prop="title 与规则绑定 -->
+        <el-form-item label="考勤开始时间" prop="createTime">
+          <el-date-picker v-model="temper.createTime" type="datetime" placeholder="请选择时间" />
         </el-form-item>
 
-        <el-form-item label=" 考勤的名称" prop="title">
-          <el-input v-model="temper.title" />
+        <el-form-item label="考勤结束时间" prop="endTime">
+          <el-date-picker v-model="temper.endTime" type="datetime" placeholder="请选择时间" />
         </el-form-item>
 
-        <el-form-item label="选择考勤班级" prop="type">
-          <el-select v-model="temper.type" class="filter-item" placeholder="Please select">
+        <el-form-item label=" 考勤的名称"  prop="name">
+          <el-input v-model="temper.name" />
+        </el-form-item>
+
+        <el-form-item label="选择考勤班级" prop="className">
+          <el-select v-model="temper.className" class="filter-item" placeholder="请选择">
             <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
         </el-form-item>
@@ -176,7 +191,8 @@
 </template>
 
 <script>
-import { fetchList, createArticle, updateArticle } from '@/api/article'
+import request from '@/utils/request'
+import { getRequestHeader } from '@/utils/requestpath'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -215,19 +231,14 @@ export default {
     return {
       dialogImageUrl: '',
       dialogVisible: false,
-      disabled: false,/**图片上传 */
       tableKey: 0,
       list: null,
       total: 0,
       listLoading: true,
       listQuery: {
-        author: undefined, /** 学生姓名 */
         page: 1,
         limit: 20,
-        importance: undefined,
-        title: undefined,
-        type: undefined,
-        sort: '+id'
+        name: ''
       },
       importanceOptions: [1, 2, 3],
       calendarTypeOptions,
@@ -236,13 +247,11 @@ export default {
       showReviewer: false,
       temper: {
         id: undefined,
-        author: '', /* 学生姓名 */
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        type: '',
-        status: '1'
+        createTime:'' ,
+        endTime: '',
+        name: "",/**考勤名称 */
+        className: '',
+        cid: 0,
       },
       dialogFormVisible: false,
       detailFormVisible: false,
@@ -252,13 +261,15 @@ export default {
       dialogUploadimg:'上传考勤图片',
       textMap: {
         update: '编辑',
-        create: '创建'
+        create: '创建',
+        createCheck:'创建考勤',
       },
       pvData: [],
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        className: [{ required: true, message: '请填写待考勤班级', trigger: 'blur' }],
+        createTime: [{ type: 'date', required: true, message: '请填写时间', trigger: 'blur' }],
+        endTime: [{ type: 'date', required: true, message: '请填写时间', trigger: 'blur' }],
+        name: [{ required: true, message: '请填写考勤名称', trigger: 'blur' }]
       },
       downloadLoading: false
     }
@@ -267,18 +278,15 @@ export default {
     this.getList()
   },
   methods: {
+    //添加考勤列表
     getList() {
       this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        console.log('Fetched data:', response.data.items) // 打印数据
-        this.list = response.data.items
-        this.total = response.data.total
+      request.get('check/queryCheckLists' ,{
+        params: this.listQuery
+      }).then(response => {
+        this.list = response.data
+        this.total = response.total
         this.listLoading = false // 确保加载状态关闭
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
       })
     },
     handleFilter() {
@@ -292,25 +300,25 @@ export default {
         title: ''
       }
     },
+    //显示发起考勤弹窗
     handleCreate() {
       this.resetTemp()
-      this.dialogStatus = 'create'
+      this.dialogStatus = 'createCheck'
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
     },
+    //添加考勤
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.temper.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temper.author = '李心情' /* 自拟一个？？？ */
-          createArticle(this.temper).then(() => {
-            this.list.unshift(this.temper)
+          request.post('check/addCheckList', this.temper).then(() => {
             this.dialogFormVisible = false
+            this.getList()
             this.$notify({
               title: '成功',
-              message: '发布考勤成功',
+              message: '添加考勤成功',
               type: 'success',
               duration: 2000
             })

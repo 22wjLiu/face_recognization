@@ -23,7 +23,7 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="ID" prop="id" align="center" width="100">
+      <el-table-column label="ID" prop="id" align="center" width="100" >
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
@@ -148,12 +148,11 @@
         highlight-current-row
         height="500px"
         style="width: 100%;"
-        :row-class-name="tableRowClassName"
       >
 
         <el-table-column
           label="学号"
-          prop="id"
+          prop="sId"
           align="center"
           width="200"
         >
@@ -164,7 +163,7 @@
 
         <el-table-column
           label="学生姓名"
-          prop="author"
+          prop="name"
           align="center"
           width="250"
         >
@@ -173,7 +172,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column
+        <!-- <el-table-column
           label="考勤状态"
           prop="author"
           align="center"
@@ -183,11 +182,9 @@
             <el-tag v-if="row.status == 0" type="info">未签到</el-tag>
             <el-tag v-else-if="row.status == 1" type="success">签到成功</el-tag>
           </template>
-        </el-table-column>
+        </el-table-column> -->
 
       </el-table>
-
-      <pagination v-show="total>0" :total="total" :page.sync="listQueryInfos.page" :limit.sync="listQueryInfos.limit" @pagination="getCheckList" />
     </el-dialog>
 
   </div>
@@ -335,7 +332,7 @@ export default {
         }
       })
     },
-    handleUpdate(row) {
+    handleUpdate(row) {   //处理数据更新的逻辑
       this.temper = Object.assign({}, row) // copy obj
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
@@ -397,14 +394,6 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
-    // 考勤颜色区分
-    tableRowClassName(row) {
-      if (row.row.status === '0') {
-        console.log(row.row.status)
-        return 'warning-row'
-      }
-      return ''
-    },
     handleAvatarSuccess(res) { /* 考勤图片上传 */
       this.imageUrl = res.data
       this.$notify({
@@ -437,13 +426,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.filter-container .filter-item {
-  margin-left: 10px;
-}
-
-::v-deep  .el-table .warning-row {
-    background:oldlace !important;
-  }
-</style>
 

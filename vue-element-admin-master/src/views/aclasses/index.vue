@@ -10,7 +10,6 @@
           icon="el-icon-edit"
           @click="handleClassCreate"
         >
-          qusi
         </el-button>
 
         <el-table

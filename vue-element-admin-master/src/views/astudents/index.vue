@@ -78,7 +78,7 @@
           <el-input v-model="temp.author" />
         </el-form-item>
 
-        <!-- 表格 -->
+        <!--内嵌 表格 -->
         <el-table
           :key="tableKey"
           v-loading="listLoading"

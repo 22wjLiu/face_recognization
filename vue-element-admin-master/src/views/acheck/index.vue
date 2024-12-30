@@ -186,7 +186,7 @@
 
       </el-table>
 
-      <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getCheckList" />
+      <pagination v-show="total>0" :total="total" :page.sync="listQueryInfos.page" :limit.sync="listQueryInfos.limit" @pagination="getCheckList" />
     </el-dialog>
 
   </div>

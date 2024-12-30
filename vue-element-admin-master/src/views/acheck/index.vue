@@ -49,7 +49,7 @@
 
       <el-table-column label="班级" width="100px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.className }}</span>
+          <span>{{ row.cId }}</span>
         </template>
       </el-table-column>
 
@@ -105,7 +105,6 @@
         </el-button>
       </div>
     </el-dialog>
-
     <!-- 考勤发起弹窗 -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temper" label-position="left" label-width="125px">
@@ -150,17 +149,16 @@
         height="500px"
         style="width: 100%;"
         :row-class-name="tableRowClassName"
-      ><!--排序监听-->
+      >
 
         <el-table-column
           label="学号"
           prop="id"
           align="center"
           width="200"
-          :class-name="getSortClass('id')"
         >
           <template slot-scope="{row}">
-            <span>{{ row.id }}</span>
+            <span>{{ row.cId }}</span>
           </template>
         </el-table-column>
 
@@ -169,10 +167,9 @@
           prop="author"
           align="center"
           width="250"
-          :class-name="getSortClass('id')"
         >
           <template slot-scope="{row}">
-            <span>{{ row.author }}</span>
+            <span>{{ row.name }}</span>
           </template>
         </el-table-column>
 
@@ -181,7 +178,6 @@
           prop="author"
           align="center"
           width="250"
-          :class-name="getSortClass('id')"
         >
           <template slot-scope="{row}">
             <span>{{ row.status }}</span>
@@ -189,6 +185,8 @@
         </el-table-column>
 
       </el-table>
+
+      <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getCheckList" />
     </el-dialog>
 
   </div>
@@ -225,6 +223,7 @@ export default {
       tableKey: 0,
       list: null,
       classList: null,
+      checkList:null,
       total: 0,
       listLoading: true,
       listQuery: {
@@ -232,8 +231,10 @@ export default {
         limit: 20,
         name: '',
       },
-      listQueryInfos: {/**考勤结果 */
-        cId:1,
+      listQueryInfos: {/**考勤详情 */
+        page: 1,
+        limit: 20,
+        cId:'',
       },
       temper: {
         id: undefined,
@@ -266,6 +267,7 @@ export default {
   created() {
     this.getAllClass()
     this.getList()
+    this.getCheckList()
   },
   methods: {
     // 添加考勤列表
@@ -280,21 +282,22 @@ export default {
       })
     },
     //添加考勤状态学生列表
-    getList() {
-    this.listLoading = true
-    request.get('check/queryCheckInfos' ,{
-      params: this.listQueryInfos
-    }).then(response => {
-      this.list = response.data
-      this.total = response.total
-      this.listLoading = false // 确保加载状态关闭
-    }),
-    getAllClass() {
+    getCheckList() {
+      this.listLoading = true
+      request.get('check/queryCheckInfos' ,{
+        params: this.listQueryInfos
+      }).then(response => {
+        this.checkList = response.data
+        this.total = response.total
+        this.listLoading = false // 确保加载状态关闭
+      })
+    },
+     getAllClass() {
       request.get('class/queryAllClassIdAndName').then(response => {
         this.classList = response.data
       })
     },
-    handleFilter() {
+    handleFilter() {/**筛选 */
       this.listQuery.page = 1
       this.getList()
     },

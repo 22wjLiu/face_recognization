@@ -23,7 +23,7 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="ID" prop="id" align="center" width="100" :class-name="getSortClass('id')">
+      <el-table-column label="ID" prop="id" align="center" width="100">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
@@ -292,7 +292,7 @@ export default {
         this.listLoading = false // 确保加载状态关闭
       })
     },
-     getAllClass() {
+    getAllClass() {
       request.get('class/queryAllClassIdAndName').then(response => {
         this.classList = response.data
       })
@@ -383,10 +383,6 @@ export default {
           duration: 2000
         })
       })
-    },
-    getSortClass: function(key) {
-      const sort = this.listQuery.sort
-      return sort === `+${key}` ? 'ascending' : 'descending'
     },
     detailViews() { // 考勤详细信息
       this.resetTemp()

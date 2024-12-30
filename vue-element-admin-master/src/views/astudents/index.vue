@@ -76,7 +76,6 @@
           <el-input v-model="temp.name" />
         </el-form-item>
 
-
         <el-form-item v-if="dialogStatus !== 'create'" label="人脸特征">
           <!--内嵌 表格 -->
           <el-table

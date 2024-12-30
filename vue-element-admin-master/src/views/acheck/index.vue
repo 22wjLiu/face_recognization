@@ -15,7 +15,8 @@
       fit
       highlight-current-row
       style="width: 100%;"
-      @sort-change="sortChange">
+      @sort-change="sortChange"
+    >
       <el-table-column label="ID" prop="id" sortable="custom" align="center" width="150" :class-name="getSortClass('id')">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
@@ -40,7 +41,7 @@
           <el-button type="primary" size="mini" @click="detailViews()">
             结果详情
           </el-button>
-          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row,$index)" style="margin-left:20px ;">
+          <el-button v-if="row.status!='deleted'" size="mini" type="danger" style="margin-left:20px ;" @click="handleDelete(row,$index)">
             删除考勤
           </el-button>
         </template>
@@ -49,10 +50,10 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-      <!-- 考勤发起弹窗 -->
-      <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <!-- 考勤发起弹窗 -->
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temper" label-position="left" label-width="125px">
-   
+
         <el-form-item label="考勤结束时间" prop="timestamp">
           <el-date-picker v-model="temper.timestamp" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
@@ -80,58 +81,59 @@
     </el-dialog>
 
     <!-- 考勤详情弹窗 -->
-    <el-dialog :title="dialogTitle" :visible.sync="detailFormVisible" > 
-         
-           <el-table
-          :key="tableKey"
-          v-loading="listLoading"
-          :data="list"
-          border
-          fit
-          highlight-current-row
-          height="500px"
-          style="width: 100%;"
-          :row-class-name="tableRowClassName"
-          @sort-change="sortChange"><!--排序监听-->
+    <el-dialog :title="dialogTitle" :visible.sync="detailFormVisible">
 
-          <el-table-column
-            label="学号"
-            prop="id"
-            sortable="custom"
-            align="center"
-            width="200"
-            :class-name="getSortClass('id')"
-          >
-            <template slot-scope="{row}">
-              <span>{{ row.id }}</span>
-            </template>
-          </el-table-column>
+      <el-table
+        :key="tableKey"
+        v-loading="listLoading"
+        :data="list"
+        border
+        fit
+        highlight-current-row
+        height="500px"
+        style="width: 100%;"
+        :row-class-name="tableRowClassName"
+        @sort-change="sortChange"
+      ><!--排序监听-->
 
-          <el-table-column
-            label="学生姓名"
-            prop="author"
-            align="center"
-            width="250"
-            :class-name="getSortClass('id')"      
-          >
-            <template slot-scope="{row}">
-              <span>{{ row.author}}</span>
-            </template>
-          </el-table-column>
+        <el-table-column
+          label="学号"
+          prop="id"
+          sortable="custom"
+          align="center"
+          width="200"
+          :class-name="getSortClass('id')"
+        >
+          <template slot-scope="{row}">
+            <span>{{ row.id }}</span>
+          </template>
+        </el-table-column>
 
-          <el-table-column
-            label="考勤状态"
-            prop="author"
-            align="center"
-            width="250"
-            :class-name="getSortClass('id')"
-          >
-            <template slot-scope="{row}">
-              <span>{{ row.status}}</span>
-            </template>
-          </el-table-column>
+        <el-table-column
+          label="学生姓名"
+          prop="author"
+          align="center"
+          width="250"
+          :class-name="getSortClass('id')"
+        >
+          <template slot-scope="{row}">
+            <span>{{ row.author }}</span>
+          </template>
+        </el-table-column>
 
-        </el-table>
+        <el-table-column
+          label="考勤状态"
+          prop="author"
+          align="center"
+          width="250"
+          :class-name="getSortClass('id')"
+        >
+          <template slot-scope="{row}">
+            <span>{{ row.status }}</span>
+          </template>
+        </el-table-column>
+
+      </el-table>
     </el-dialog>
 
   </div>
@@ -180,7 +182,7 @@ export default {
       total: 0,
       listLoading: true,
       listQuery: {
-        author: undefined,/**学生姓名 */
+        author: undefined, /** 学生姓名 */
         page: 1,
         limit: 20,
         importance: undefined,
@@ -195,7 +197,7 @@ export default {
       showReviewer: false,
       temper: {
         id: undefined,
-        author:'',/*学生姓名 */
+        author: '', /* 学生姓名 */
         importance: 1,
         remark: '',
         timestamp: new Date(),
@@ -227,10 +229,10 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
-        console.log("Fetched data:", response.data.items);  // 打印数据
+        console.log('Fetched data:', response.data.items) // 打印数据
         this.list = response.data.items
         this.total = response.data.total
-        this.listLoading = false;  // 确保加载状态关闭
+        this.listLoading = false // 确保加载状态关闭
 
         // Just to simulate the time of the request
         setTimeout(() => {
@@ -279,7 +281,7 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           this.temper.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temper.author = '李心情' /*自拟一个？？？ */
+          this.temper.author = '李心情' /* 自拟一个？？？ */
           createArticle(this.temper).then(() => {
             this.list.unshift(this.temper)
             this.dialogFormVisible = false
@@ -367,13 +369,12 @@ export default {
     },
     // 考勤颜色区分
     tableRowClassName(row) {
-        if ( row.row.status === '0') {
-          console.log(row.row.status)
-          return 'warning-row';
-        }
-        return '';
+      if (row.row.status === '0') {
+        console.log(row.row.status)
+        return 'warning-row'
       }
-
+      return ''
+    }
 
   }
 }

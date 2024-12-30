@@ -1,5 +1,5 @@
 module.exports = {
-  title: 'Vue Element Admin',
+  title: '人脸识别签到系统',
 
   /**
    * @type {boolean} true | false

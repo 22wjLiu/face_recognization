@@ -78,6 +78,7 @@
 
 
         <!--内嵌 表格 -->
+        <el-form-item v-if="dialogStatus !== 'create'" label="上传人脸特征">
         <el-table
           :key="tableKey"
           v-loading="listLoading"
@@ -89,14 +90,6 @@
           style="width: 100%;"
           @sort-change="sortChange"
         >
-          <el-table-column
-            label="序列"
-            prop="id"
-            sortable="custom"
-            align="center"
-            width="100"
-            :class-name="getSortClass('id')"
-          >
             <el-table-column
               label="特征ID"
               prop="id"

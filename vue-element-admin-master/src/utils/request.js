@@ -5,9 +5,9 @@ import { getToken } from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
-  // baseURL: process.env.VUE_APP_BASE_API // url = base url + request url
+  baseURL: process.env.VUE_APP_BASE_API // url = base url + request url
   // baseURL: 'http://127.0.0.1:5000/'
-  baseURL: 'http://www.shantouliu.site:4499'
+  // baseURL: 'http://www.shantouliu.site:4499'
 })
 
 // request interceptor

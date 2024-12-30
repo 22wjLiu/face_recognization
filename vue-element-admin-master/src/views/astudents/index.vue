@@ -243,7 +243,7 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          request.post('check/addStudent', this.temp).then(() => {
+          request.post('student/addStudent', this.temp).then(() => {
             this.dialogFormVisible = false
             this.getList()
             this.$notify({

@@ -23,7 +23,7 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="ID" prop="id" align="center" width="100" :class-name="getSortClass('id')">
+      <el-table-column label="ID" prop="id" align="center" width="100">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
@@ -157,7 +157,6 @@
           prop="id"
           align="center"
           width="200"
-          :class-name="getSortClass('id')"
         >
           <template slot-scope="{row}">
             <span>{{ row.id }}</span>
@@ -169,7 +168,6 @@
           prop="author"
           align="center"
           width="250"
-          :class-name="getSortClass('id')"
         >
           <template slot-scope="{row}">
             <span>{{ row.author }}</span>
@@ -181,7 +179,6 @@
           prop="author"
           align="center"
           width="250"
-          :class-name="getSortClass('id')"
         >
           <template slot-scope="{row}">
             <span>{{ row.status }}</span>
@@ -230,7 +227,10 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        name: ''
+        name: '',
+      },
+      listQueryInfos: {/**考勤结果 */
+        cId:1,
       },
       temper: {
         id: undefined,
@@ -238,7 +238,7 @@ export default {
         endTime: '',
         name: '', /** 考勤名称 */
         className: '',
-        cid: 0
+        cid: 0,/**班级id */
       },
       dialogFormVisible: false,
       detailFormVisible: false,
@@ -352,30 +352,21 @@ export default {
         }
       })
     },
-    handleDelete(row, index) {
-      this.$notify({
-        title: '成功',
-        message: '提交删除请求成功，请等待服务器响应',
-        type: 'success',
-        duration: 2000
-      })
-      request.delete('feature/deleteById', {
+    // 删除考勤
+    handleDelete(row) {
+      request.delete('check/deleteById', {
         params: {
           id: row.id
         }
       }).then(() => {
-        this.getFeatureList(this.temper.id)
+        this.getList()
         this.$notify({
           title: '成功',
-          message: '删除成功！',
+          message: '删除考勤成功！',
           type: 'success',
           duration: 2000
         })
       })
-    },
-    getSortClass: function(key) {
-      const sort = this.listQuery.sort
-      return sort === `+${key}` ? 'ascending' : 'descending'
     },
     detailViews() { // 考勤详细信息
       this.resetTemp()

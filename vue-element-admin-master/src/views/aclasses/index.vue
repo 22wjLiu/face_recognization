@@ -127,8 +127,8 @@
 </template>
 
 <script>
-import { getClassList, createClass, updateClass, deleteClass } from '@/api/class';
-import Pagination from '@/components/Pagination';
+import { getClassList, createClass, updateClass, deleteClass } from '@/api/class'
+import Pagination from '@/components/Pagination'
 
 export default {
   name: 'ClassStudentManagement',
@@ -142,68 +142,68 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 20,
+        limit: 20
       },
       dialogFormVisible: false,
       dialogStatus: '',
       temp: {
         id: undefined,
         author: '',
-        classId: undefined,
+        classId: undefined
       },
       dialogClassFormVisible: false,
       dialogClassStatus: '',
       classTemp: {
-        name: '',
+        name: ''
       },
       rules: {
         id: [{ required: true, message: '学号不能为空', trigger: 'blur' }],
-        author: [{ required: true, message: '姓名不能为空', trigger: 'blur' }],
+        author: [{ required: true, message: '姓名不能为空', trigger: 'blur' }]
       },
       classRules: {
-        name: [{ required: true, message: '班级名称不能为空', trigger: 'blur' }],
-      },
-    };
+        name: [{ required: true, message: '班级名称不能为空', trigger: 'blur' }]
+      }
+    }
   },
   created() {
-    this.getClassList();
+    this.getClassList()
   },
   methods: {
     // 获取班级列表
     getClassList() {
-      this.listLoading = true;
+      this.listLoading = true
       getClassList().then((response) => {
         if (response.success) {
-          this.classList = response.data;
-          this.listLoading = false;
+          this.classList = response.data
+          this.listLoading = false
         }
-      });
+      })
     },
 
     // 获取学生列表
     getList() {
-      this.listLoading = true;
+      this.listLoading = true
       setTimeout(() => {
         this.list = [
           { id: '1001', author: '学生A', classId: this.temp.classId },
-          { id: '1002', author: '学生B', classId: this.temp.classId },
-        ];
-        this.total = this.list.length;
-        this.listLoading = false;
-      }, 1000);
+          { id: '1002', author: '学生B', classId: this.temp.classId }
+        ]
+        this.total = this.list.length
+        this.listLoading = false
+      }, 1000)
     },
 
     // 选择班级后更新学生列表
     handleClassClick(row) {
-      this.temp.classId = row.id;
-      this.getList();
+      this.temp.classId = row.id
+      this.getList()
     },
 
     // 打开编辑班级对话框
     handleClassCreate() {
-      this.classTemp = { name: '' };
-      this.dialogClassStatus = 'create';
-      this.dialogClassFormVisible = true;
+      this.classTemp = { name: '' }
+      this.dialogClassStatus = 'create'
+      this.dialogClassFormVisible = true
     },
 
     // 创建班级
@@ -211,11 +211,11 @@ export default {
       if (this.classTemp.name) {
         createClass(this.classTemp).then((response) => {
           if (response.success) {
-            this.classList.push(response.data); // 更新班级列表
-            this.dialogClassFormVisible = false;
-            this.$message.success('班级创建成功');
+            this.classList.push(response.data) // 更新班级列表
+            this.dialogClassFormVisible = false
+            this.$message.success('班级创建成功')
           }
-        });
+        })
       }
     },
 
@@ -224,15 +224,15 @@ export default {
       this.$confirm(`确定要删除班级: ${row.name} 吗?`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning',
+        type: 'warning'
       }).then(() => {
         deleteClass(row.id).then((response) => {
           if (response.success) {
-            this.classList = this.classList.filter(item => item.id !== row.id);
-            this.$message.success('班级删除成功');
+            this.classList = this.classList.filter(item => item.id !== row.id)
+            this.$message.success('班级删除成功')
           }
-        });
-      });
+        })
+      })
     },
 
     // 打开添加学生对话框
@@ -240,38 +240,38 @@ export default {
       this.temp = {
         id: undefined,
         author: '',
-        classId: this.temp.classId,
-      };
-      this.dialogStatus = 'create';
-      this.dialogFormVisible = true;
+        classId: this.temp.classId
+      }
+      this.dialogStatus = 'create'
+      this.dialogFormVisible = true
     },
 
     // 创建学生
     createData() {
-      console.log(this.temp);
-      this.dialogFormVisible = false;
+      console.log(this.temp)
+      this.dialogFormVisible = false
     },
 
     // 更新学生
     updateData() {
-      console.log(this.temp);
-      this.dialogFormVisible = false;
+      console.log(this.temp)
+      this.dialogFormVisible = false
     },
 
     // 删除学生
     handleDelete(row, index) {
-      this.list.splice(index, 1);
-      this.$message.success('删除成功');
+      this.list.splice(index, 1)
+      this.$message.success('删除成功')
     },
 
     // 更新学生信息
     handleUpdate(row) {
-      this.temp = { ...row };
-      this.dialogStatus = 'update';
-      this.dialogFormVisible = true;
-    },
-  },
-};
+      this.temp = { ...row }
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+    }
+  }
+}
 </script>
 
 <style scoped>

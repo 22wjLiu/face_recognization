@@ -58,7 +58,7 @@
           <el-button type="primary" size="mini" @click="handleImgViews()">
             上传考勤照片
           </el-button>
-          <el-button type="primary" size="mini" style="margin-left:20px ;" @click="detailViews()">
+          <el-button type="primary" size="mini" style="margin-left:20px ;" @click="detailViews(row.id)">
             结果详情
           </el-button>
           <el-button v-if="row.status!='deleted'" size="mini" type="danger" style="margin-left:20px ;" @click="handleDelete(row,$index)">
@@ -141,8 +141,8 @@
 
       <el-table
         :key="tableKey"
-        v-loading="listLoading"
-        :data="list"
+        v-loading="checkInfoListLoading"
+        :data="checkList"
         border
         fit
         highlight-current-row
@@ -158,7 +158,7 @@
           width="200"
         >
           <template slot-scope="{row}">
-            <span>{{ row.cId }}</span>
+            <span>{{ row.sId }}</span>
           </template>
         </el-table-column>
 
@@ -180,7 +180,8 @@
           width="250"
         >
           <template slot-scope="{row}">
-            <span>{{ row.status }}</span>
+            <el-tag v-if="row.status == 0" type="info">未签到</el-tag>
+            <el-tag v-else-if="row.status == 1" type="success">签到成功</el-tag>
           </template>
         </el-table-column>
 
@@ -223,18 +224,17 @@ export default {
       tableKey: 0,
       list: null,
       classList: null,
-      checkList:null,
+      checkList: null,
       total: 0,
       listLoading: true,
+      checkInfoListLoading: false,
       listQuery: {
         page: 1,
         limit: 20,
-        name: '',
+        name: ''
       },
-      listQueryInfos: {/**考勤详情 */
-        page: 1,
-        limit: 20,
-        cId:'',
+      listQueryInfos: { /** 考勤详情 */
+        cId: ''
       },
       temper: {
         id: undefined,
@@ -242,7 +242,7 @@ export default {
         endTime: '',
         name: '', /** 考勤名称 */
         className: '',
-        cid: 0,/**班级id */
+        cid: 0/** 班级id */
       },
       dialogFormVisible: false,
       detailFormVisible: false,
@@ -267,7 +267,6 @@ export default {
   created() {
     this.getAllClass()
     this.getList()
-    this.getCheckList()
   },
   methods: {
     // 添加考勤列表
@@ -281,15 +280,14 @@ export default {
         this.listLoading = false // 确保加载状态关闭
       })
     },
-    //添加考勤状态学生列表
+    // 添加考勤状态学生列表
     getCheckList() {
-      this.listLoading = true
-      request.get('check/queryCheckInfos' ,{
+      this.checkInfoListLoading = true
+      request.get('check/queryCheckInfos', {
         params: this.listQueryInfos
       }).then(response => {
         this.checkList = response.data
-        this.total = response.total
-        this.listLoading = false // 确保加载状态关闭
+        this.checkInfoListLoading = false // 确保加载状态关闭
       })
     },
     getAllClass() {
@@ -297,7 +295,7 @@ export default {
         this.classList = response.data
       })
     },
-    handleFilter() {/**筛选 */
+    handleFilter() { /** 筛选 */
       this.listQuery.page = 1
       this.getList()
     },
@@ -384,13 +382,12 @@ export default {
         })
       })
     },
-    detailViews() { // 考勤详细信息
+    detailViews(cId) { // 考勤详细信息
       this.resetTemp()
       this.dialogTitle = '考勤详细信息'
       this.detailFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+      this.listQueryInfos.cId = cId
+      this.getCheckList()
     },
     handleImgViews() {
       this.resetTemp()

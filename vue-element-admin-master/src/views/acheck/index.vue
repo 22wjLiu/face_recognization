@@ -194,21 +194,10 @@
 import request from '@/utils/request'
 import { getRequestHeader } from '@/utils/requestpath'
 import waves from '@/directive/waves' // waves directive
+import request from '@/utils/request'
+import { getRequestHeader } from '@/utils/requestpath'
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-
-const calendarTypeOptions = [
-  { key: 'CN', display_name: '一班' },
-  { key: 'US', display_name: '二班' },
-  { key: 'JP', display_name: '三班' },
-  { key: 'EU', display_name: '四班' }
-]
-
-// arr to obj, such as { CN : "China", US : "USA" }
-const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  acc[cur.key] = cur.display_name
-  return acc
-}, {})
 
 export default {
   name: 'ComplexTable',
@@ -240,11 +229,6 @@ export default {
         limit: 20,
         name: ''
       },
-      importanceOptions: [1, 2, 3],
-      calendarTypeOptions,
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
-      statusOptions: ['punished', 'draft', 'deleted'],
-      showReviewer: false,
       temper: {
         id: undefined,
         createTime:'' ,
@@ -295,9 +279,10 @@ export default {
     },
     resetTemp() {
       this.temper = {
-        id: undefined,
-        timestamp: new Date(),
-        title: ''
+        name: '',
+        createTime: '',
+        endTime: '',
+        cId: ''
       }
     },
     //显示发起考勤弹窗
@@ -470,6 +455,10 @@ export default {
 </script>
 
 <style scoped>
+.filter-container .filter-item {
+  margin-left: 10px;
+}
+
 ::v-deep  .el-table .warning-row {
     background:oldlace !important;
   }

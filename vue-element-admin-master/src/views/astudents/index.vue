@@ -124,7 +124,7 @@
         <el-form-item v-if="dialogStatus !== 'create'" label="上传人脸特征">
           <el-upload
             class="avatar-uploader"
-            :action="'http://127.0.0.1:5000/upload?s_id=' + temp.id"
+            :action="getUploadHeader() + 'upload?s_id=' + temp.id"
             :show-file-list="false"
             :on-success="handleAvatarSuccess"
             :before-upload="beforeAvatarUpload"
@@ -152,7 +152,7 @@
 <script>
 import waves from '@/directive/waves'
 import request from '@/utils/request'
-import { getRequestHeader } from '@/utils/requestpath'
+import { getRequestHeader, getUploadHeader } from '@/utils/requestpath'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
@@ -195,6 +195,7 @@ export default {
   },
   methods: {
     getRequestHeader,
+    getUploadHeader,
     getList() {
       this.listLoading = true
       request.get('student/queryStudentList', {

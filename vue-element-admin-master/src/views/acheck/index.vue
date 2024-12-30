@@ -176,23 +176,11 @@
 </template>
 
 <script>
-import { fetchList, createArticle, updateArticle } from '@/api/article'
 import waves from '@/directive/waves' // waves directive
+import request from '@/utils/request'
+import { getRequestHeader } from '@/utils/requestpath'
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-
-const calendarTypeOptions = [
-  { key: 'CN', display_name: '一班' },
-  { key: 'US', display_name: '二班' },
-  { key: 'JP', display_name: '三班' },
-  { key: 'EU', display_name: '四班' }
-]
-
-// arr to obj, such as { CN : "China", US : "USA" }
-const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  acc[cur.key] = cur.display_name
-  return acc
-}, {})
 
 export default {
   name: 'ComplexTable',
@@ -215,7 +203,6 @@ export default {
     return {
       dialogImageUrl: '',
       dialogVisible: false,
-      disabled: false,/**图片上传 */
       tableKey: 0,
       list: null,
       total: 0,
@@ -224,25 +211,13 @@ export default {
         author: undefined, /** 学生姓名 */
         page: 1,
         limit: 20,
-        importance: undefined,
-        title: undefined,
-        type: undefined,
-        sort: '+id'
+        name: ''
       },
-      importanceOptions: [1, 2, 3],
-      calendarTypeOptions,
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
-      statusOptions: ['punished', 'draft', 'deleted'],
-      showReviewer: false,
       temper: {
-        id: undefined,
-        author: '', /* 学生姓名 */
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        type: '',
-        status: '1'
+        name: '',
+        createTime: '',
+        endTime: '',
+        cId: ''
       },
       dialogFormVisible: false,
       detailFormVisible: false,
@@ -269,16 +244,12 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        console.log('Fetched data:', response.data.items) // 打印数据
-        this.list = response.data.items
-        this.total = response.data.total
+      request.get('check/queryCheckLists', {
+        params: this.listQuery
+      }).then(response => {
+        this.list = response.data
+        this.total = response.total
         this.listLoading = false // 确保加载状态关闭
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
       })
     },
     handleFilter() {
@@ -287,9 +258,10 @@ export default {
     },
     resetTemp() {
       this.temper = {
-        id: undefined,
-        timestamp: new Date(),
-        title: ''
+        name: '',
+        createTime: '',
+        endTime: '',
+        cId: ''
       }
     },
     handleCreate() {
@@ -462,6 +434,10 @@ export default {
 </script>
 
 <style scoped>
+.filter-container .filter-item {
+  margin-left: 10px;
+}
+
 ::v-deep  .el-table .warning-row {
     background:oldlace !important;
   }

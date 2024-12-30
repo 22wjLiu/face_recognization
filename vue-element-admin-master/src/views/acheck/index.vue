@@ -15,7 +15,8 @@
       fit
       highlight-current-row
       style="width: 100%;"
-      @sort-change="sortChange">
+      @sort-change="sortChange"
+    >
       <el-table-column label="ID" prop="id" sortable="custom" align="center" width="80" :class-name="getSortClass('id')">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
@@ -34,7 +35,7 @@
           <el-tag>{{ row.type | typeFilter }}</el-tag>
         </template>
       </el-table-column>
-     
+
       <el-table-column label="操作" align="center" width="350px" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="detailViews()">
@@ -49,10 +50,10 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-      <!-- 考勤发起弹窗 -->
-      <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <!-- 考勤发起弹窗 -->
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="125px">
-   
+
         <el-form-item label="考勤结束时间" prop="timestamp">
           <el-date-picker v-model="temp.timestamp" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
@@ -60,7 +61,7 @@
         <el-form-item label=" 考勤的名称" prop="title">
           <el-input v-model="temp.title" />
         </el-form-item>
-        
+
         <el-form-item label="选择考勤班级" prop="type">
           <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
             <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
@@ -71,7 +72,7 @@
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
-         取消
+          取消
         </el-button>
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
           确定
@@ -81,10 +82,7 @@
 
     <!-- 考勤详情弹窗 -->
     <el-dialog :title="dialogTitle" :visible.sync="detailFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        
-      
-      </el-form>
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;" />
     </el-dialog>
 
   </div>
@@ -306,9 +304,9 @@ export default {
       const sort = this.listQuery.sort
       return sort === `+${key}` ? 'ascending' : 'descending'
     },
-    detailViews(){//考勤详细信息
+    detailViews() { // 考勤详细信息
       this.resetTemp()
-      this.dialogTitle = "考勤详细信息"
+      this.dialogTitle = '考勤详细信息'
       this.detailFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()

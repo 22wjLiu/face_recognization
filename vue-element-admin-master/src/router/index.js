@@ -71,11 +71,6 @@ export const constantRoutes = [
     hidden: true
   },
   {
-    path: '/401',
-    component: () => import('@/views/error-page/401'),
-    hidden: true
-  },
-  {
     path: '/',
     component: Layout,
     redirect: '/students',
@@ -83,7 +78,7 @@ export const constantRoutes = [
       {
         path: 'students',
         component: () => import('@/views/astudents/index'),
-        name: 'Dashboard',
+        name: 'students',
         meta: { title: '学生管理', icon: 'people', affix: true }
       }
     ]
@@ -96,7 +91,7 @@ export const constantRoutes = [
       {
         path: 'classes',
         component: () => import('@/views/aclasses/index'),
-        name: 'Dashboard',
+        name: 'classes',
         meta: { title: '班级管理', icon: 'tree-table', affix: true }
       }
     ]
@@ -109,7 +104,7 @@ export const constantRoutes = [
       {
         path: 'check',
         component: () => import('@/views/acheck/index'),
-        name: 'Dashboard',
+        name: 'check',
         meta: { title: '考勤管理', icon: 'dashboard', affix: true }
       }
     ]

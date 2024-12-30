@@ -1,6 +1,10 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
+      <el-input v-model="listQuery.name" placeholder="考勤名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+        查询
+      </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         发起考勤
       </el-button>
@@ -14,22 +18,20 @@
       border
       fit
       highlight-current-row
-      style="width: 100%;"
-      @sort-change="sortChange"
-    >
-      <el-table-column label="ID" prop="id" sortable="custom" align="center" width="150" :class-name="getSortClass('id')">
+      style="width: 100%;">
+      <el-table-column label="ID" prop="id"  align="center" width="100" :class-name="getSortClass('id')">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="截止时间" width="250px" align="center">
+      <el-table-column label="截止时间" width="200px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="考勤名称" width="550px" align="center">
+      <el-table-column label="考勤名称" width="600px" align="center">
         <template slot-scope="{row}">
           <span class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
           <el-tag>{{ row.type | typeFilter }}</el-tag>
@@ -38,7 +40,10 @@
 
       <el-table-column label="操作" align="center" width="350px" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="detailViews()">
+          <el-button type="primary" size="mini" @click="handleImgViews()">
+            上传考勤照片
+          </el-button>
+          <el-button type="primary" size="mini" @click="detailViews()" style="margin-left:20px ;">
             结果详情
           </el-button>
           <el-button v-if="row.status!='deleted'" size="mini" type="danger" style="margin-left:20px ;" @click="handleDelete(row,$index)">
@@ -50,8 +55,42 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <!-- 考勤发起弹窗 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <!-- 上传考勤图片弹窗 -->
+    <el-dialog :title="dialogUploadimg" :visible.sync="ImgFormVisible">
+      <el-form ref="dataForm" :rules="rules" :model="temper" label-position="left" label-width="100px">
+      
+        <el-upload
+        action="getRequestHeader() + '/upload?s_id=' + temper.id"
+        list-type="picture-card"
+        :auto-upload="false"
+        :on-success="handleAvatarSuccess"
+        :before-upload="beforeAvatarUpload">
+          <i slot="default" class="el-icon-plus"></i>
+            <div slot="file" slot-scope="{file}">
+              <img
+                class="el-upload-list__item-thumbnail"
+                :src="file.url" alt=""
+              >
+            </div>
+        </el-upload>
+        <el-dialog :visible.sync="dialogVisible">
+          <img width="100%" :src="dialogImageUrl" alt="">
+        </el-dialog>
+
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="ImgFormVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" @click="dialogStatus==='create'?createImgData():updateImgData()">
+          确定
+        </el-button>
+      </div>
+    </el-dialog>
+
+      <!-- 考勤发起弹窗 -->
+      <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temper" label-position="left" label-width="125px">
 
         <el-form-item label="考勤结束时间" prop="timestamp">
@@ -81,33 +120,30 @@
     </el-dialog>
 
     <!-- 考勤详情弹窗 -->
-    <el-dialog :title="dialogTitle" :visible.sync="detailFormVisible">
+    <el-dialog :title="dialogTitle" :visible.sync="detailFormVisible" > 
+         
+           <el-table
+          :key="tableKey"
+          v-loading="listLoading"
+          :data="list"
+          border
+          fit
+          highlight-current-row
+          height="500px"
+          style="width: 100%;"
+          :row-class-name="tableRowClassName"><!--排序监听-->
 
-      <el-table
-        :key="tableKey"
-        v-loading="listLoading"
-        :data="list"
-        border
-        fit
-        highlight-current-row
-        height="500px"
-        style="width: 100%;"
-        :row-class-name="tableRowClassName"
-        @sort-change="sortChange"
-      ><!--排序监听-->
-
-        <el-table-column
-          label="学号"
-          prop="id"
-          sortable="custom"
-          align="center"
-          width="200"
-          :class-name="getSortClass('id')"
-        >
-          <template slot-scope="{row}">
-            <span>{{ row.id }}</span>
-          </template>
-        </el-table-column>
+          <el-table-column
+            label="学号"
+            prop="id"
+            align="center"
+            width="200"
+            :class-name="getSortClass('id')"
+          >
+            <template slot-scope="{row}">
+              <span>{{ row.id }}</span>
+            </template>
+          </el-table-column>
 
         <el-table-column
           label="学生姓名"
@@ -177,6 +213,9 @@ export default {
   },
   data() {
     return {
+      dialogImageUrl: '',
+      dialogVisible: false,
+      disabled: false,/**图片上传 */
       tableKey: 0,
       list: null,
       total: 0,
@@ -207,8 +246,10 @@ export default {
       },
       dialogFormVisible: false,
       detailFormVisible: false,
+      ImgFormVisible:false,
       dialogStatus: '',
       dialogTitle: '详细信息',
+      dialogUploadimg:'上传考勤图片',
       textMap: {
         update: '编辑',
         create: '创建'
@@ -244,29 +285,11 @@ export default {
       this.listQuery.page = 1
       this.getList()
     },
-    sortChange(data) {
-      const { prop, order } = data
-      if (prop === 'id') {
-        this.sortByID(order)
-      }
-    },
-    sortByID(order) {
-      if (order === 'ascending') {
-        this.listQuery.sort = '+id'
-      } else {
-        this.listQuery.sort = '-id'
-      }
-      this.handleFilter()
-    },
     resetTemp() {
       this.temper = {
         id: undefined,
-        importance: 1,
-        remark: '',
         timestamp: new Date(),
-        title: '',
-        status: '1',
-        type: ''
+        title: ''
       }
     },
     handleCreate() {
@@ -286,8 +309,24 @@ export default {
             this.list.unshift(this.temper)
             this.dialogFormVisible = false
             this.$notify({
-              title: 'Success',
-              message: 'Created Successfully',
+              title: '成功',
+              message: '发布考勤成功',
+              type: 'success',
+              duration: 2000
+            })
+          })
+        }
+      })
+    },
+    createImgData() {
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          request.post('student/addStudent', this.temp).then(() => {
+            this.ImgFormVisible = false
+            this.getList()
+            this.$notify({
+              title: '成功',
+              message: '图片上传成功',
               type: 'success',
               duration: 2000
             })
@@ -314,8 +353,24 @@ export default {
             this.list.splice(index, 1, this.temper)
             this.dialogFormVisible = false
             this.$notify({
-              title: 'Success',
-              message: 'Update Successfully',
+              title: '成功',
+              message: '编辑考勤成功',
+              type: 'success',
+              duration: 2000
+            })
+          })
+        }
+      })
+    },
+    updateImgData() {
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          request.post('student/updateStudent', this.temp).then(() => {
+            this.dialogFormVisible = false
+            this.getList()
+            this.$notify({
+              title: '成功',
+              message: '考勤图片上传成功！',
               type: 'success',
               duration: 2000
             })
@@ -325,35 +380,25 @@ export default {
     },
     handleDelete(row, index) {
       this.$notify({
-        title: 'Success',
-        message: 'Delete Successfully',
+        title: '成功',
+        message: '提交删除请求成功，请等待服务器响应',
         type: 'success',
         duration: 2000
       })
-      this.list.splice(index, 1)
-    },
-    handleDownload() {
-      this.downloadLoading = true
-      import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-        const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
-        const data = this.formatJson(filterVal)
-        excel.export_json_to_excel({
-          header: tHeader,
-          data,
-          filename: 'table-list'
-        })
-        this.downloadLoading = false
-      })
-    },
-    formatJson(filterVal) {
-      return this.list.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j])
-        } else {
-          return v[j]
+      // this.list.splice(index, 1)
+      request.delete('feature/deleteById', {
+        params: {
+          id: row.id
         }
-      }))
+      }).then(() => {
+        this.getFeatureList(this.temper.id)
+        this.$notify({
+          title: '成功',
+          message: '删除成功！',
+          type: 'success',
+          duration: 2000
+        })
+      })
     },
     getSortClass: function(key) {
       const sort = this.listQuery.sort
@@ -367,15 +412,51 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
+    handleImgViews(){
+      this.resetTemp()
+      this.dialogTitle = '上传考勤图片'
+      this.ImgFormVisible = true /**关闭弹窗 */
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
     // 考勤颜色区分
     tableRowClassName(row) {
-      if (row.row.status === '0') {
-        console.log(row.row.status)
-        return 'warning-row'
-      }
-      return ''
-    }
+        if ( row.row.status === '0') {
+          console.log(row.row.status)
+          return 'warning-row';
+        }
+        return '';
+      },
+    handleAvatarSuccess(res) {/*考勤图片上传 */
+      this.imageUrl = res.data
+      this.$notify({
+        title: '成功',
+        message: '上传考勤照片成功！',
+        type: 'success',
+        duration: 2000
+      })
+      this.getFeatureList(this.temp.id)
+    },
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === 'image/jpeg' || 'image/png'
+      const isLt2M = file.size / 1024 / 1024 < 2
 
+
+      if (!isJPG) {
+        this.$message.error('上传头像图片只能是 JPG 格式!')
+      }
+      if (!isLt2M) {
+        this.$message.error('上传头像图片大小不能超过 2MB!')
+      }
+      this.$notify({
+        title: '成功',
+        message: '提交上传请求成功，请等待服务器响应！',
+        type: 'success',
+        duration: 2000
+      })
+      return isJPG && isLt2M
+    }
   }
 }
 </script>

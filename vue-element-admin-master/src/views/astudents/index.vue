@@ -76,6 +76,7 @@
           <el-input v-model="temp.name" />
         </el-form-item>
 
+
         <el-form-item v-if="dialogStatus !== 'create'" label="人脸特征">
           <!--内嵌 表格 -->
           <el-table
@@ -88,7 +89,6 @@
             height="300px"
             style="width: 100%;"
           >
-
             <el-table-column
               label="特征ID"
               prop="id"

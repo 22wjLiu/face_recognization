@@ -126,7 +126,7 @@
 
         <el-upload
           class="avatar-uploader"
-          action="http://www.shantouliu.site:4499/upload"
+          action="http://www.shantouliu.site:4499/recognize?s_id=2"
           :show-file-list="false"
           :on-success="handleAvatarSuccess"
           :before-upload="beforeAvatarUpload"
@@ -187,6 +187,7 @@ export default {
   },
   data() {
     return {
+      test: '',
       imageUrl: '',
       tableKey: 0,
       list: null,
@@ -362,20 +363,23 @@ export default {
       return sort === `+${key}` ? 'ascending' : 'descending'
     },
     handleAvatarSuccess(res, file) {
-        this.imageUrl = 'http://www.shantouliu.site:4499' + res.data;
-      },
-      beforeAvatarUpload(file) {
-        const isJPG = file.type === 'image/jpeg' || 'image/png';
-        const isLt2M = file.size / 1024 / 1024 < 2;
+      this.imageUrl = 'http://www.shantouliu.site:4499' + res.data
+    },
+    handleTestSuccess(res, file) {
+      this.test = res.data
+    },
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === 'image/jpeg' || 'image/png'
+      const isLt2M = file.size / 1024 / 1024 < 2
 
-        if (!isJPG) {
-          this.$message.error('上传头像图片只能是 JPG 格式!');
-        }
-        if (!isLt2M) {
-          this.$message.error('上传头像图片大小不能超过 2MB!');
-        }
-        return isJPG && isLt2M;
+      if (!isJPG) {
+        this.$message.error('上传头像图片只能是 JPG 格式!')
       }
+      if (!isLt2M) {
+        this.$message.error('上传头像图片大小不能超过 2MB!')
+      }
+      return isJPG && isLt2M
+    }
   }
 }
 </script>

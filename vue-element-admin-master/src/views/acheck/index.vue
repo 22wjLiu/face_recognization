@@ -23,7 +23,7 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="ID" prop="id" align="center" width="100" >
+      <el-table-column label="ID" prop="id" align="center" width="100">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
@@ -43,7 +43,7 @@
 
       <el-table-column label="考勤名称" width="300px" align="center">
         <template slot-scope="{row}">
-          <span @click="handleUpdate(row)">{{ row.name }}</span>
+          <span>{{ row.name }}</span>
         </template>
       </el-table-column>
 
@@ -55,9 +55,6 @@
 
       <el-table-column label="操作" align="center" width="350px" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="handleImgViews()">
-            上传考勤照片
-          </el-button>
           <el-button type="primary" size="mini" style="margin-left:20px ;" @click="detailViews(row.id)">
             结果详情
           </el-button>
@@ -70,41 +67,6 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <!-- 上传考勤图片弹窗 -->
-    <el-dialog :title="dialogUploadimg" :visible.sync="ImgFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temper" label-position="left" label-width="100px">
-
-        <el-upload
-          action="getRequestHeader() + '/upload?s_id=' + temper.id"
-          list-type="picture-card"
-          :auto-upload="false"
-          :on-success="handleAvatarSuccess"
-          :before-upload="beforeAvatarUpload"
-        >
-          <i slot="default" class="el-icon-plus" />
-          <div slot="file" slot-scope="{file}">
-            <img
-              class="el-upload-list__item-thumbnail"
-              :src="file.url"
-              alt=""
-            >
-          </div>
-        </el-upload>
-        <el-dialog :visible.sync="dialogVisible">
-          <img width="100%" :src="dialogImageUrl" alt="">
-        </el-dialog>
-
-      </el-form>
-
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="ImgFormVisible = false">
-          取消
-        </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createImgData():updateImgData()">
-          确定
-        </el-button>
-      </div>
-    </el-dialog>
     <!-- 考勤发起弹窗 -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temper" label-position="left" label-width="125px">
@@ -172,7 +134,7 @@
           </template>
         </el-table-column>
 
-        <!-- <el-table-column
+        <el-table-column
           label="考勤状态"
           prop="author"
           align="center"
@@ -182,9 +144,20 @@
             <el-tag v-if="row.status == 0" type="info">未签到</el-tag>
             <el-tag v-else-if="row.status == 1" type="success">签到成功</el-tag>
           </template>
-        </el-table-column> -->
+        </el-table-column>
 
       </el-table>
+
+      <el-upload
+        class="avatar-uploader"
+        :action="getUploadHeader() + 'recognize?c_id=' + listQueryInfos.cId"
+        :show-file-list="false"
+        :on-success="handleAvatarSuccess"
+        :before-upload="beforeAvatarUpload"
+      >
+        <img v-if="imageUrl" :src="getRequestHeader() + imageUrl" class="avatar">
+        <i v-else class="el-icon-plus avatar-uploader-icon" />
+      </el-upload>
     </el-dialog>
 
   </div>
@@ -193,30 +166,17 @@
 <script>
 import waves from '@/directive/waves' // waves directive
 import request from '@/utils/request'
-import { getRequestHeader } from '@/utils/requestpath'
 import { parseTime } from '@/utils'
+import { getRequestHeader, getUploadHeader } from '@/utils/requestpath'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
   name: 'ComplexTable',
   components: { Pagination },
   directives: { waves },
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      return statusMap[status]
-    },
-    typeFilter(type) {
-      return calendarTypeKeyValue[type]
-    }
-  },
   data() {
     return {
-      dialogImageUrl: '',
+      imageUrl: '',
       dialogVisible: false,
       tableKey: 0,
       list: null,
@@ -266,6 +226,9 @@ export default {
     this.getList()
   },
   methods: {
+    parseTime,
+    getRequestHeader,
+    getUploadHeader,
     // 添加考勤列表
     getList() {
       this.listLoading = true
@@ -332,21 +295,6 @@ export default {
         }
       })
     },
-    handleUpdate(row) {   //处理数据更新的逻辑
-      this.temper = Object.assign({}, row) // copy obj
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
-    },
-    updateData() {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          const tempData = Object.assign({}, this.temper)
-        }
-      })
-    },
     updateImgData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
@@ -386,23 +334,15 @@ export default {
       this.listQueryInfos.cId = cId
       this.getCheckList()
     },
-    handleImgViews() {
-      this.resetTemp()
-      this.dialogTitle = '上传考勤图片'
-      this.ImgFormVisible = true /** 关闭弹窗 */
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
-    },
     handleAvatarSuccess(res) { /* 考勤图片上传 */
       this.imageUrl = res.data
       this.$notify({
         title: '成功',
-        message: '上传考勤照片成功！',
+        message: '识别成功！',
         type: 'success',
         duration: 2000
       })
-      this.getFeatureList(this.temp.id)
+      this.getCheckList()
     },
     beforeAvatarUpload(file) {
       const isJPG = file.type === 'image/jpeg' || 'image/png'
@@ -410,9 +350,11 @@ export default {
 
       if (!isJPG) {
         this.$message.error('上传头像图片只能是 JPG 格式!')
+        return false
       }
       if (!isLt2M) {
         this.$message.error('上传头像图片大小不能超过 2MB!')
+        return false
       }
       this.$notify({
         title: '成功',
@@ -426,4 +368,29 @@ export default {
 }
 </script>
 
+<style scoped>
+ .avatar-uploader >>> .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar-uploader >>> .el-upload:hover {
+    border-color: #409EFF;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+  }
+</style>
 

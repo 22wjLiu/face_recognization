@@ -194,6 +194,7 @@ export default {
   },
   methods: {
     getUploadHeader,
+    getRequestHeader,
     getList() {
       this.listLoading = true
       request.get('student/queryStudentList', {

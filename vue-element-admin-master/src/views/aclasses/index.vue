@@ -9,8 +9,7 @@
           type="primary"
           icon="el-icon-edit"
           @click="handleClassCreate"
-        >
-        </el-button>
+        />
 
         <el-table
           :data="classList"
@@ -115,7 +114,7 @@
             <el-button @click="dialogClassFormVisible = false">
               取消
             </el-button>
-            <el-button type="primary" @click="dialogClassStatus === 'create' ? createClass() : updateClass()">
+            <el-button type="primary">
               确定
             </el-button>
           </div>
@@ -126,12 +125,10 @@
 </template>
 
 <script>
-import { getClassList, createClass, updateClass, deleteClass } from '@/api/class'
-import Pagination from '@/components/Pagination'
+import { getClassList, createClass, deleteClass } from '@/api/class'
 
 export default {
   name: 'ClassStudentManagement',
-  components: { Pagination },
   data() {
     return {
       tableKey: 0,
@@ -247,12 +244,6 @@ export default {
 
     // 创建学生
     createData() {
-      console.log(this.temp)
-      this.dialogFormVisible = false
-    },
-
-    // 更新学生
-    updateData() {
       console.log(this.temp)
       this.dialogFormVisible = false
     },

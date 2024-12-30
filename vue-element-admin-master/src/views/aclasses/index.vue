@@ -10,7 +10,7 @@
           icon="el-icon-edit"
           @click="handleClassCreate"
         >
-          添加班级
+          qusi
         </el-button>
 
         <el-table

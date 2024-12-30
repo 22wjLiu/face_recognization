@@ -46,7 +46,7 @@
           <el-button type="primary" size="mini" @click="detailViews()" style="margin-left:20px ;">
             结果详情
           </el-button>
-          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row,$index)" style="margin-left:20px ;">
+          <el-button v-if="row.status!='deleted'" size="mini" type="danger" style="margin-left:20px ;" @click="handleDelete(row,$index)">
             删除考勤
           </el-button>
         </template>
@@ -92,7 +92,7 @@
       <!-- 考勤发起弹窗 -->
       <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temper" label-position="left" label-width="125px">
-   
+
         <el-form-item label="考勤结束时间" prop="timestamp">
           <el-date-picker v-model="temper.timestamp" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
@@ -145,31 +145,31 @@
             </template>
           </el-table-column>
 
-          <el-table-column
-            label="学生姓名"
-            prop="author"
-            align="center"
-            width="250"
-            :class-name="getSortClass('id')"      
-          >
-            <template slot-scope="{row}">
-              <span>{{ row.author}}</span>
-            </template>
-          </el-table-column>
+        <el-table-column
+          label="学生姓名"
+          prop="author"
+          align="center"
+          width="250"
+          :class-name="getSortClass('id')"
+        >
+          <template slot-scope="{row}">
+            <span>{{ row.author }}</span>
+          </template>
+        </el-table-column>
 
-          <el-table-column
-            label="考勤状态"
-            prop="author"
-            align="center"
-            width="250"
-            :class-name="getSortClass('id')"
-          >
-            <template slot-scope="{row}">
-              <span>{{ row.status}}</span>
-            </template>
-          </el-table-column>
+        <el-table-column
+          label="考勤状态"
+          prop="author"
+          align="center"
+          width="250"
+          :class-name="getSortClass('id')"
+        >
+          <template slot-scope="{row}">
+            <span>{{ row.status }}</span>
+          </template>
+        </el-table-column>
 
-        </el-table>
+      </el-table>
     </el-dialog>
 
   </div>
@@ -221,7 +221,7 @@ export default {
       total: 0,
       listLoading: true,
       listQuery: {
-        author: undefined,/**学生姓名 */
+        author: undefined, /** 学生姓名 */
         page: 1,
         limit: 20,
         importance: undefined,
@@ -236,7 +236,7 @@ export default {
       showReviewer: false,
       temper: {
         id: undefined,
-        author:'',/*学生姓名 */
+        author: '', /* 学生姓名 */
         importance: 1,
         remark: '',
         timestamp: new Date(),
@@ -270,10 +270,10 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
-        console.log("Fetched data:", response.data.items);  // 打印数据
+        console.log('Fetched data:', response.data.items) // 打印数据
         this.list = response.data.items
         this.total = response.data.total
-        this.listLoading = false;  // 确保加载状态关闭
+        this.listLoading = false // 确保加载状态关闭
 
         // Just to simulate the time of the request
         setTimeout(() => {
@@ -304,7 +304,7 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           this.temper.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temper.author = '李心情' /*自拟一个？？？ */
+          this.temper.author = '李心情' /* 自拟一个？？？ */
           createArticle(this.temper).then(() => {
             this.list.unshift(this.temper)
             this.dialogFormVisible = false
@@ -441,6 +441,7 @@ export default {
     beforeAvatarUpload(file) {
       const isJPG = file.type === 'image/jpeg' || 'image/png'
       const isLt2M = file.size / 1024 / 1024 < 2
+
 
       if (!isJPG) {
         this.$message.error('上传头像图片只能是 JPG 格式!')

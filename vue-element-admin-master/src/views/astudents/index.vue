@@ -77,19 +77,18 @@
         </el-form-item>
 
 
-        <!--内嵌 表格 -->
-        <el-form-item v-if="dialogStatus !== 'create'" label="上传人脸特征">
-        <el-table
-          :key="tableKey"
-          v-loading="listLoading"
-          :data="list"
-          border
-          fit
-          highlight-current-row
-          height="300px"
-          style="width: 100%;"
-          @sort-change="sortChange"
-        >
+        <el-form-item v-if="dialogStatus !== 'create'" label="人脸特征">
+          <!--内嵌 表格 -->
+          <el-table
+            :key="tableKey"
+            v-loading="listLoading"
+            :data="tempfeatures"
+            border
+            fit
+            highlight-current-row
+            height="300px"
+            style="width: 100%;"
+          >
             <el-table-column
               label="特征ID"
               prop="id"
@@ -103,7 +102,7 @@
 
             <el-table-column label="图片" width="100px" align="center">
               <template slot-scope="{row}">
-                <img style="height: 100px;" :src="getRequestHeader() + row.img_url" alt="">
+                <img style="height: 100px;" :src="getRequestHeader() + row.imgUrl" alt="">
               </template>
             </el-table-column>
 
@@ -125,7 +124,7 @@
         <el-form-item v-if="dialogStatus !== 'create'" label="上传人脸特征">
           <el-upload
             class="avatar-uploader"
-            :action="getRequestHeader() + '/upload?s_id=' + temp.id"
+            :action="'http://127.0.0.1:5000/upload?s_id=' + temp.id"
             :show-file-list="false"
             :on-success="handleAvatarSuccess"
             :before-upload="beforeAvatarUpload"
@@ -208,13 +207,12 @@ export default {
     },
     getFeatureList(id) {
       this.featureListLoading = true
-      request.get('feature/getBySId', {
+      request.get('feature/queryFeatureList', {
         params: {
-          s_id: id
+          sId: id
         }
       }).then(response => {
         this.tempfeatures = response.data
-        this.tempfeatures.s_id = id
         this.featureListLoading = false
       })
     },
@@ -286,12 +284,6 @@ export default {
       })
     },
     handleFeatureDelete(row) {
-      this.$notify({
-        title: '成功',
-        message: '提交删除请求成功，请等待服务器响应！',
-        type: 'success',
-        duration: 2000
-      })
       request.delete('feature/deleteById', {
         params: {
           id: row.id
@@ -307,7 +299,7 @@ export default {
       })
     },
     handleDelete(row) {
-      request.delete('student/deleteStudent', {
+      request.delete('student/deleteById', {
         params: {
           id: row.id
         }

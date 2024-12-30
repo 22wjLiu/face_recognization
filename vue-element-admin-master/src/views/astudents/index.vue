@@ -48,7 +48,6 @@
             编辑
           </el-button>
           <el-button
-            v-if="row.status != 'deleted'"
             size="mini"
             style="margin-left:40px ;"
             type="danger"
@@ -77,12 +76,12 @@
           <el-input v-model="temp.name" />
         </el-form-item>
 
-        <el-form-item v-if="dialogStatus !== 'create'">
+        <el-form-item v-if="dialogStatus !== 'create'" label="人脸特征图片">
           <!-- 表格 -->
           <el-table
             :key="tableKey"
-            v-loading="listLoading"
-            :data="list"
+            v-loading="featureListLoading"
+            :data="tempfeatures"
             border
             fit
             highlight-current-row
@@ -90,7 +89,7 @@
             style="width: 100%;"
           >
             <el-table-column
-              label="序列"
+              label="特征ID"
               prop="id"
               align="center"
               width="100"
@@ -100,20 +99,19 @@
               </template>
             </el-table-column>
 
-            <el-table-column label="图片" width="250px" align="center">
+            <el-table-column label="图片" width="100px" align="center">
               <template slot-scope="{row}">
-                <img src="" alt="">
+                <img style="height: 100px;" :src="getRequestHeader() + row.img_url" alt="">
               </template>
             </el-table-column>
 
             <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
               <template slot-scope="{row}">
                 <el-button
-                  v-if="row.status != 'deleted'"
                   size="mini"
                   style="margin-left:40px ;"
                   type="danger"
-                  @click="handleDelete(row)"
+                  @click="handleFeatureDelete(row)"
                 >
                   删除
                 </el-button>
@@ -122,10 +120,10 @@
           </el-table>
         </el-form-item>
 
-        <el-form-item v-if="dialogStatus !== 'create'">
+        <el-form-item v-if="dialogStatus !== 'create'" label="上传人脸特征">
           <el-upload
             class="avatar-uploader"
-            :action="getRequestHeader() + 'recognize?s_id=2'"
+            :action="getRequestHeader() + '/upload?s_id=' + temp.id"
             :show-file-list="false"
             :on-success="handleAvatarSuccess"
             :before-upload="beforeAvatarUpload"
@@ -136,6 +134,7 @@
         </el-form-item>
 
       </el-form>
+
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
           取消
@@ -166,26 +165,24 @@ export default {
       list: null,
       total: 0,
       listLoading: true,
+      featureListLoading: false,
       listQuery: {
         page: 1,
         limit: 10,
         name: ''
       },
-      importanceOptions: [1, 2, 3],
-      statusOptions: ['published', 'draft', 'deleted'],
       showReviewer: false,
       temp: {
         id: undefined,
         name: ''
       },
+      tempfeatures: [],
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
         update: '编辑',
         create: '创建'
       },
-      dialogPvVisible: false,
-      pvData: [],
       rules: {
         name: [{ required: true, message: '学生姓名不能为空', trigger: 'blur' }]
       },
@@ -205,6 +202,18 @@ export default {
         this.list = response.data
         this.total = response.total
         this.listLoading = false
+      })
+    },
+    getFeatureList(id) {
+      this.featureListLoading = true
+      request.get('feature/getBySId', {
+        params: {
+          s_id: id
+        }
+      }).then(response => {
+        this.tempfeatures = response.data
+        this.tempfeatures.s_id = id
+        this.featureListLoading = false
       })
     },
     handleModifyStatus(row, status) {
@@ -251,6 +260,8 @@ export default {
     handleUpdate(row) { // 编辑操作
       this.temp = Object.assign({}, row)
       this.dialogStatus = 'update'
+      this.imageUrl = ''
+      this.getFeatureList(this.temp.id)
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
@@ -272,6 +283,27 @@ export default {
         }
       })
     },
+    handleFeatureDelete(row) {
+      this.$notify({
+        title: '成功',
+        message: '提交删除请求成功，请等待服务器响应！',
+        type: 'success',
+        duration: 2000
+      })
+      request.delete('feature/deleteById', {
+        params: {
+          id: row.id
+        }
+      }).then(() => {
+        this.getFeatureList(this.temp.id)
+        this.$notify({
+          title: '成功',
+          message: '删除成功！',
+          type: 'success',
+          duration: 2000
+        })
+      })
+    },
     handleDelete(row) {
       request.delete('student/deleteStudent', {
         params: {
@@ -289,6 +321,13 @@ export default {
     },
     handleAvatarSuccess(res) {
       this.imageUrl = res.data
+      this.$notify({
+        title: '成功',
+        message: '添加人脸特征成功！',
+        type: 'success',
+        duration: 2000
+      })
+      this.getFeatureList(this.temp.id)
     },
     beforeAvatarUpload(file) {
       const isJPG = file.type === 'image/jpeg' || 'image/png'
@@ -300,6 +339,12 @@ export default {
       if (!isLt2M) {
         this.$message.error('上传头像图片大小不能超过 2MB!')
       }
+      this.$notify({
+        title: '成功',
+        message: '提交上传请求成功，请等待服务器响应！',
+        type: 'success',
+        duration: 2000
+      })
       return isJPG && isLt2M
     }
   }
@@ -311,14 +356,14 @@ export default {
   margin-left: 10px;
 }
 
-  .avatar-uploader .el-upload {
+  .avatar-uploader >>> .el-upload {
     border: 1px dashed #d9d9d9;
     border-radius: 6px;
     cursor: pointer;
     position: relative;
     overflow: hidden;
   }
-  .avatar-uploader .el-upload:hover {
+  .avatar-uploader >>> .el-upload:hover {
     border-color: #409EFF;
   }
   .avatar-uploader-icon {

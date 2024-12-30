@@ -286,7 +286,7 @@ export default {
         this.listLoading = false // 确保加载状态关闭
       })
     },
-     getAllClass() {
+    getAllClass() {
       request.get('class/queryAllClassIdAndName').then(response => {
         this.classList = response.data
       })

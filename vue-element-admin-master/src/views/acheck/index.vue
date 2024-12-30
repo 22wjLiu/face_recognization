@@ -23,7 +23,7 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="ID" prop="id" align="center" width="100" :class-name="getSortClass('id')">
+      <el-table-column label="ID" prop="id" align="center" width="100" >
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
@@ -142,29 +142,28 @@
       <el-table
         :key="tableKey"
         v-loading="listLoading"
-        :data="list"
+        :data="checklist"
         border
         fit
         highlight-current-row
         height="500px"
         style="width: 100%;"
-        :row-class-name="tableRowClassName"
       >
 
         <el-table-column
           label="学号"
-          prop="id"
+          prop="sId"
           align="center"
           width="200"
         >
           <template slot-scope="{row}">
-            <span>{{ row.cId }}</span>
+            <span>{{ row.sId }}</span>
           </template>
         </el-table-column>
 
         <el-table-column
           label="学生姓名"
-          prop="author"
+          prop="name"
           align="center"
           width="250"
         >
@@ -173,7 +172,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column
+        <!-- <el-table-column
           label="考勤状态"
           prop="author"
           align="center"
@@ -182,11 +181,9 @@
           <template slot-scope="{row}">
             <span>{{ row.status }}</span>
           </template>
-        </el-table-column>
+        </el-table-column> -->
 
       </el-table>
-
-      <pagination v-show="total>0" :total="total" :page.sync="listQueryInfos.page" :limit.sync="listQueryInfos.limit" @pagination="getCheckList" />
     </el-dialog>
 
   </div>
@@ -232,8 +229,6 @@ export default {
         name: '',
       },
       listQueryInfos: {/**考勤详情 */
-        page: 1,
-        limit: 20,
         cId:'',
       },
       temper: {
@@ -267,7 +262,6 @@ export default {
   created() {
     this.getAllClass()
     this.getList()
-    this.getCheckList()
   },
   methods: {
     // 添加考勤列表
@@ -337,7 +331,7 @@ export default {
         }
       })
     },
-    handleUpdate(row) {
+    handleUpdate(row) {   //处理数据更新的逻辑
       this.temper = Object.assign({}, row) // copy obj
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
@@ -384,17 +378,10 @@ export default {
         })
       })
     },
-    getSortClass: function(key) {
-      const sort = this.listQuery.sort
-      return sort === `+${key}` ? 'ascending' : 'descending'
-    },
     detailViews() { // 考勤详细信息
-      this.resetTemp()
+      this.getCheckList()    
       this.dialogTitle = '考勤详细信息'
       this.detailFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
     },
     handleImgViews() {
       this.resetTemp()
@@ -403,14 +390,6 @@ export default {
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
-    },
-    // 考勤颜色区分
-    tableRowClassName(row) {
-      if (row.row.status === '0') {
-        console.log(row.row.status)
-        return 'warning-row'
-      }
-      return ''
     },
     handleAvatarSuccess(res) { /* 考勤图片上传 */
       this.imageUrl = res.data
@@ -444,13 +423,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.filter-container .filter-item {
-  margin-left: 10px;
-}
-
-::v-deep  .el-table .warning-row {
-    background:oldlace !important;
-  }
-</style>
 

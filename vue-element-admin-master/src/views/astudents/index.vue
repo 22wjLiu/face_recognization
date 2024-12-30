@@ -76,17 +76,26 @@
           <el-input v-model="temp.name" />
         </el-form-item>
 
-        <el-form-item v-if="dialogStatus !== 'create'" label="人脸特征图片">
-          <!-- 表格 -->
-          <el-table
-            :key="tableKey"
-            v-loading="featureListLoading"
-            :data="tempfeatures"
-            border
-            fit
-            highlight-current-row
-            height="300px"
-            style="width: 100%;"
+
+        <!--内嵌 表格 -->
+        <el-table
+          :key="tableKey"
+          v-loading="listLoading"
+          :data="list"
+          border
+          fit
+          highlight-current-row
+          height="300px"
+          style="width: 100%;"
+          @sort-change="sortChange"
+        >
+          <el-table-column
+            label="序列"
+            prop="id"
+            sortable="custom"
+            align="center"
+            width="100"
+            :class-name="getSortClass('id')"
           >
             <el-table-column
               label="特征ID"
